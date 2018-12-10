@@ -2,70 +2,45 @@
 #define COUNTDOWNWORDSEARCH_TRIENODE_H
 
 #include <memory>
-#include <algorithm>
 #include <vector>
 
-// TODO: Make parent access more secure, raw pointer is a temporary solution
 namespace zmote::countdown {
-    class TrieNode {
-        TrieNode *_parent;
-        std::vector<std::shared_ptr<TrieNode>> _children;
+
+    using TrieNodeSharedPtr = std::shared_ptr<class TrieNode>;
+    using TrieNodeWeakPtr = std::weak_ptr<class TrieNode>;
+    using TrieNodeVector = std::vector<TrieNodeSharedPtr>;
+
+    class TrieNode : public std::enable_shared_from_this<TrieNode> {
+        TrieNodeWeakPtr _parent;
+        TrieNodeVector _children;
         bool _isEndNode = false;
         char _value;
+
     private:
-        auto find_element(char letter) {
-            return std::find_if(_children.begin(), _children.end(),
-                                [&letter](std::shared_ptr<TrieNode> &shared_ptr) {
-                                    return tolower(shared_ptr->val()) == tolower(letter);
-                                });
-        }
+        auto find_element(char letter);
 
     public:
-        TrieNode() : _value{'\0'}, _parent{nullptr} {}
+        TrieNode();
 
-        explicit TrieNode(char value) : _value{value}, _parent{nullptr} {}
+        explicit TrieNode(char value);
 
-        std::shared_ptr<TrieNode> &add_child(char letter) {
-            auto it = find_element(letter);
-            if (it == _children.end()) {
-                _children.emplace_back(std::make_shared<TrieNode>(tolower(letter)));
-                _children.back()->set_parent(this);
-                return _children.back();
-            }
-            return *it;
-        }
+        TrieNodeSharedPtr &add_child(char letter);
 
-        void mark_word_end() {
-            _isEndNode = true;
-        }
+        void mark_word_end();
 
-        bool is_word_end() const {
-            return _isEndNode;
-        }
+        bool is_word_end() const;
 
-        void set_parent(TrieNode *pParent) {
-            _parent = pParent;
-        }
+        void set_parent(const TrieNodeSharedPtr &pParent);
 
-        TrieNode *get_parent() const {
-            return _parent;
-        }
+        TrieNodeSharedPtr get_parent() const;
 
-        bool has_next(char letter) {
-            auto it = find_element(letter);
-            return it != _children.end();
-        }
+        bool has_next(char letter);
 
-        std::shared_ptr<TrieNode> &get_next(char letter) {
-            if (has_next(letter)) {
-                return *find_element(letter);
-            }
-            throw std::out_of_range{"No next node found."};
-        }
+        TrieNodeSharedPtr &get_next(char letter);
 
-        char val() const {
-            return _value;
-        }
+        char val() const;
+
+        const TrieNodeVector &get_children() const;
     };
 }
 #endif //COUNTDOWNWORDSEARCH_TRIENODE_H
