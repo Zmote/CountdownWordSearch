@@ -9,7 +9,7 @@
 int main() {
     std::cout << "Initializing dictionary... please be patient...\n";
     zmote::countdown::Trie dictionary{"./resources/words.txt"};
-
+    dictionary.writeTrieToJSONFile("treeData.json");
     std::string input{};
     std::cout << "Check if a word exists in the dictionary:\n";
     std::cout << "Your word:\n";

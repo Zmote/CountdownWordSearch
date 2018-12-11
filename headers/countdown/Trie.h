@@ -6,6 +6,7 @@
 namespace zmote::countdown {
     class Trie {
         TrieNodeSharedPtr _root{std::make_shared<TrieNode>()};
+
     private:
         std::string extract_around_letter(char letter, const std::string &input);
 
@@ -23,15 +24,19 @@ namespace zmote::countdown {
 
         Trie() = default;
 
-        explicit Trie(const std::string &filePath);
+        explicit Trie(const std::string &file_path);
 
         void build_from(const std::string &file_path);
 
-        void add_word(const std::string &pWord);
+        void add_word(const std::string &p_word);
 
         std::vector<std::string> find_words(std::string &input);
 
         bool exists(const std::string &p_word);
+
+        std::string calculate_trie_representation();
+
+        void writeTrieToJSONFile(const std::string& file_name);
     };
 }
 

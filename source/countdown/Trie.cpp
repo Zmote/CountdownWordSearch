@@ -6,8 +6,8 @@
 
 namespace zmote::countdown {
 
-    Trie::Trie(const std::string &filePath) {
-        build_from(filePath);
+    Trie::Trie(const std::string &file_path) {
+        build_from(file_path);
     }
 
     std::string Trie::extract_around_letter(char letter, const std::string &input) {
@@ -21,26 +21,6 @@ namespace zmote::countdown {
             }
         }
         return extracted;
-    }
-
-    void Trie::build_from(const std::string &file_path) {
-        _root = std::make_shared<TrieNode>();
-        std::ifstream file_stream{};
-        file_stream.open(file_path, std::ifstream::in);
-        if (file_stream.is_open()) {
-            std::string line{};
-            while (std::getline(file_stream, line)) {
-                this->add_word(line);
-            }
-        }
-    }
-
-    void Trie::add_word(const std::string &pWord) {
-        TrieNodeSharedPtr node = _root;
-        std::for_each(pWord.cbegin(), pWord.cend(), [&node](char letter) {
-            node = node->add_child(letter);
-        });
-        node->mark_word_end();
     }
 
     void Trie::traverse_and_collect(const TrieNodeSharedPtr &p_node,
@@ -82,6 +62,26 @@ namespace zmote::countdown {
         return words;
     }
 
+    void Trie::build_from(const std::string &file_path) {
+        _root = std::make_shared<TrieNode>();
+        std::ifstream file_stream{};
+        file_stream.open(file_path, std::ifstream::in);
+        if (file_stream.is_open()) {
+            std::string line{};
+            while (std::getline(file_stream, line)) {
+                this->add_word(line);
+            }
+        }
+    }
+
+    void Trie::add_word(const std::string &p_word) {
+        TrieNodeSharedPtr node = _root;
+        std::for_each(p_word.cbegin(), p_word.cend(), [&node](char letter) {
+            node = node->add_child(letter);
+        });
+        node->mark_word_end();
+    }
+
     std::vector<std::string> Trie::find_words(std::string &input) {
         TrieNodeVector found_nodes{};
         std::string origin{input};
@@ -105,5 +105,39 @@ namespace zmote::countdown {
             }
         });
         return _exists ? node->is_word_end() : _exists;
+    }
+
+    using VectorOfCharVectors = std::vector<std::vector<char>>;
+
+    std::string calculate_trie_recursive(const TrieNodeSharedPtr &p_node) {
+        if (!p_node->get_children().empty()) {
+            std::string node_json{"{"};
+            node_json += R"("value":")";
+            node_json += p_node->val();
+            node_json += R"(", "children":[)";
+            for (const TrieNodeSharedPtr &p_child:p_node->get_children()) {
+                node_json += calculate_trie_recursive(p_child);
+                node_json += ",";
+            }
+            node_json.pop_back();
+            node_json += "]}";
+            return node_json;
+        } else {
+            std::string node_json{"{"};
+            node_json += R"("value":")";
+            node_json += p_node->val();
+            node_json += "\"}";
+            return node_json;
+        }
+    }
+
+    std::string Trie::calculate_trie_representation() {
+        return calculate_trie_recursive(_root);
+    }
+
+    void Trie::writeTrieToJSONFile(const std::string &file_name) {
+        std::ofstream out(file_name);
+        out << calculate_trie_representation();
+        out.close();
     };
 }
