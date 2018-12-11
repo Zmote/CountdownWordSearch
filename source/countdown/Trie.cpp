@@ -139,74 +139,79 @@ namespace zmote::countdown {
     };
 
 
-    std::string Trie::calculate_dot_node_representation(const TrieNodeSharedPtr &p_node, int level) {
+    std::string Trie::calculate_gephi_edge(const TrieNodeSharedPtr &p_node, const TrieNodeSharedPtr &p_child) {
         std::string line{};
-        line += get_replacement(std::string{p_node->val()});
-        line += "_";
-        line += std::to_string(level);
-        line += "_";
         line += std::to_string(p_node->get_id());
+        line += ",";
+        line += std::to_string(p_child->get_id());
+        line += ",Directed,";
+        line += std::to_string(++zmote::countdown::GLOBAL_ID);
+        line += ",,,1\n";
         return line;
     }
 
-    std::string Trie::calculate_dot_node_definition(const TrieNodeSharedPtr &p_node, const std::string &node) {
+    std::string Trie::calculate_gephi_node(const TrieNodeSharedPtr &p_node) {
         std::string line{};
-        line += node;
-        line += R"( [label=")";
+        line += std::to_string(p_node->get_id());
+        line += ",";
         line += get_replacement(std::string{p_node->val()});
-        line += R"("];)";
-        line += "\n";
+        line += ",\n";
         return line;
     }
 
-    std::string Trie::construct_dot_line(const TrieNodeSharedPtr &p_node, int level) {
-        std::string line{};
-        std::string parent_node{calculate_dot_node_representation(p_node, level)};
-        line += calculate_dot_node_definition(p_node, parent_node);
+    std::pair<std::string, std::string> Trie::construct_gephi_pair(const TrieNodeSharedPtr &p_node, int level) {
+        std::string node{calculate_gephi_node(p_node)};
+        std::string edges{};
         for (const TrieNodeSharedPtr &p_child: p_node->get_children()) {
-            std::string child_node{calculate_dot_node_representation(p_child, level)};
-            line += calculate_dot_node_definition(p_child, child_node);
-            line += parent_node;
-            line += " -> ";
-            line += child_node;
-            line += ";\n";
+            edges += calculate_gephi_edge(p_node, p_child);
         }
-        return line;
+        return std::pair<std::string, std::string>{node, edges};
     }
 
-    void Trie::calculate_trie_recursive(const TrieNodeSharedPtr &p_node, std::set<std::string> &nodes, int level) {
+    void Trie::calculate_trie_recursive(const TrieNodeSharedPtr &p_node,
+                                        std::set<std::pair<std::string, std::string>> &nodes, int level) {
         if (!p_node->get_children().empty()) {
             for (const TrieNodeSharedPtr &p_child:p_node->get_children()) {
                 calculate_trie_recursive(p_child, nodes, level + 1);
             }
-            nodes.insert(construct_dot_line(p_node, level));
+            nodes.insert(construct_gephi_pair(p_node, level));
         } else {
-            nodes.insert(construct_dot_line(p_node, level));
+            nodes.insert(construct_gephi_pair(p_node, level));
         }
     }
 
-    std::string Trie::calculate_trie_representation() {
+    std::set<std::pair<std::string, std::string>> Trie::calculate_trie_representation() {
         init_replacement_map();
-        std::set<std::string> nodes{};
+        zmote::countdown::GLOBAL_ID = 0;
+        std::set<std::pair<std::string, std::string>> nodes{};
         calculate_trie_recursive(_root, nodes, 0);
-        std::string representation{};
-        for (const std::string &line : nodes) {
-            representation += line;
-        }
-        return representation;
+        return nodes;
     }
 
-    void Trie::writeTrieToDot(const std::string &file_name) {
-        std::ofstream out(file_name + ".dot");
-        std::string graph{"\nROOT -> "};
-        graph += calculate_trie_representation();
-        std::string graph_notation{};
-        graph_notation += "digraph g{\n";
-        graph_notation += R"(graph [pad="0.5", nodesep="1", ranksep="2"];)";
-        graph_notation += "\n";
-        graph_notation += graph;
-        graph_notation += "}";
-        out << graph_notation;
-        out.close();
+    void Trie::writeTrieToCSV(const std::string &file_name) {
+        auto nodes_and_edges = calculate_trie_representation();
+        std::ofstream nodes{file_name + "_nodes.csv"};
+        std::ofstream edges{file_name + "_edges.csv"};
+        std::set<std::string> nodes_set{};
+        std::set<std::string> edges_set{};
+        for (const auto &pair: nodes_and_edges) {
+            nodes_set.emplace(pair.first);
+            edges_set.emplace(pair.second);
+        }
+
+        std::string nodes_all{"Id,Label,timeset\n"};
+        for (const std::string &node_string: nodes_set) {
+            nodes_all += node_string;
+        }
+
+        std::string edges_all{"Source,Target,Type,Id,Label,timeset,Weight\n"};
+        for (const std::string &edge_string: edges_set) {
+            edges_all += edge_string;
+        }
+        nodes << nodes_all;
+        edges << edges_all;
+
+        nodes.close();
+        edges.close();
     }
 }
