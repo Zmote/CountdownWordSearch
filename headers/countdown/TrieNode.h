@@ -6,6 +6,8 @@
 
 namespace zmote::countdown {
 
+    static int GLOBAL_ID{0};
+
     using TrieNodeSharedPtr = std::shared_ptr<class TrieNode>;
     using TrieNodeWeakPtr = std::weak_ptr<class TrieNode>;
     using TrieNodeVector = std::vector<TrieNodeSharedPtr>;
@@ -15,6 +17,7 @@ namespace zmote::countdown {
         TrieNodeVector _children;
         bool _isEndNode = false;
         char _value;
+        int _id = zmote::countdown::GLOBAL_ID++;
 
     private:
         auto find_element(char letter);
@@ -39,6 +42,8 @@ namespace zmote::countdown {
         TrieNodeSharedPtr &get_next(char letter);
 
         char val() const;
+
+        int get_id() const;
 
         const TrieNodeVector &get_children() const;
     };

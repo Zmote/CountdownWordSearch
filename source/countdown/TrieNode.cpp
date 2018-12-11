@@ -59,4 +59,8 @@ namespace zmote::countdown {
     const TrieNodeVector &TrieNode::get_children() const {
         return _children;
     }
+
+    int TrieNode::get_id() const {
+        return _id;
+    }
 }

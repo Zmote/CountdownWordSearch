@@ -1,5 +1,4 @@
 #include <string>
-#include <set>
 #include <fstream>
 #include <algorithm>
 #include "../../headers/countdown/Trie.h"
@@ -8,6 +7,27 @@ namespace zmote::countdown {
 
     Trie::Trie(const std::string &file_path) {
         build_from(file_path);
+    }
+
+    void Trie::init_replacement_map() {
+        _replacementMap.emplace("-", "HYPHEN");
+        _replacementMap.emplace(",", "COMMA");
+        _replacementMap.emplace("'", "QUOTATION");
+        _replacementMap.emplace("&", "AND");
+        _replacementMap.emplace(".", "DOT");
+        _replacementMap.emplace("/", "SLASH");
+        _replacementMap.emplace("!", "EXCLAMATION");
+        _replacementMap.emplace("0", "ZERO");
+        _replacementMap.emplace("1", "ONE");
+        _replacementMap.emplace("2", "TWO");
+        _replacementMap.emplace("3", "THREE");
+        _replacementMap.emplace("4", "FOUR");
+        _replacementMap.emplace("5", "FIVE");
+        _replacementMap.emplace("6", "SIX");
+        _replacementMap.emplace("7", "SEVEN");
+        _replacementMap.emplace("8", "EIGHT");
+        _replacementMap.emplace("9", "NINE");
+        _replacementMap.emplace("10", "TEN");
     }
 
     std::string Trie::extract_around_letter(char letter, const std::string &input) {
@@ -109,35 +129,84 @@ namespace zmote::countdown {
 
     using VectorOfCharVectors = std::vector<std::vector<char>>;
 
-    std::string calculate_trie_recursive(const TrieNodeSharedPtr &p_node) {
+    std::string Trie::get_replacement(const std::string &letter) {
+        if (!letter.empty() && letter[0] == '\0') return "EMPTY";
+        auto it = _replacementMap.find(letter);
+        if (it != _replacementMap.end()) {
+            return it->second;
+        }
+        return letter;
+    };
+
+
+    std::string Trie::calculate_dot_node_representation(const TrieNodeSharedPtr &p_node, int level) {
+        std::string line{};
+        line += get_replacement(std::string{p_node->val()});
+        line += "_";
+        line += std::to_string(level);
+        line += "_";
+        line += std::to_string(p_node->get_id());
+        return line;
+    }
+
+    std::string Trie::calculate_dot_node_definition(const TrieNodeSharedPtr &p_node, const std::string &node) {
+        std::string line{};
+        line += node;
+        line += R"( [label=")";
+        line += get_replacement(std::string{p_node->val()});
+        line += R"("];)";
+        line += "\n";
+        return line;
+    }
+
+    std::string Trie::construct_dot_line(const TrieNodeSharedPtr &p_node, int level) {
+        std::string line{};
+        std::string parent_node{calculate_dot_node_representation(p_node, level)};
+        line += calculate_dot_node_definition(p_node, parent_node);
+        for (const TrieNodeSharedPtr &p_child: p_node->get_children()) {
+            std::string child_node{calculate_dot_node_representation(p_child, level)};
+            line += calculate_dot_node_definition(p_child, child_node);
+            line += parent_node;
+            line += " -> ";
+            line += child_node;
+            line += ";\n";
+        }
+        return line;
+    }
+
+    void Trie::calculate_trie_recursive(const TrieNodeSharedPtr &p_node, std::set<std::string> &nodes, int level) {
         if (!p_node->get_children().empty()) {
-            std::string node_json{"{"};
-            node_json += R"("value":")";
-            node_json += p_node->val();
-            node_json += R"(", "children":[)";
             for (const TrieNodeSharedPtr &p_child:p_node->get_children()) {
-                node_json += calculate_trie_recursive(p_child);
-                node_json += ",";
+                calculate_trie_recursive(p_child, nodes, level + 1);
             }
-            node_json.pop_back();
-            node_json += "]}";
-            return node_json;
+            nodes.insert(construct_dot_line(p_node, level));
         } else {
-            std::string node_json{"{"};
-            node_json += R"("value":")";
-            node_json += p_node->val();
-            node_json += "\"}";
-            return node_json;
+            nodes.insert(construct_dot_line(p_node, level));
         }
     }
 
     std::string Trie::calculate_trie_representation() {
-        return calculate_trie_recursive(_root);
+        init_replacement_map();
+        std::set<std::string> nodes{};
+        calculate_trie_recursive(_root, nodes, 0);
+        std::string representation{};
+        for (const std::string &line : nodes) {
+            representation += line;
+        }
+        return representation;
     }
 
-    void Trie::writeTrieToJSONFile(const std::string &file_name) {
-        std::ofstream out(file_name);
-        out << calculate_trie_representation();
+    void Trie::writeTrieToDot(const std::string &file_name) {
+        std::ofstream out(file_name + ".dot");
+        std::string graph{"\nROOT -> "};
+        graph += calculate_trie_representation();
+        std::string graph_notation{};
+        graph_notation += "digraph g{\n";
+        graph_notation += R"(graph [pad="0.5", nodesep="1", ranksep="2"];)";
+        graph_notation += "\n";
+        graph_notation += graph;
+        graph_notation += "}";
+        out << graph_notation;
         out.close();
-    };
+    }
 }
