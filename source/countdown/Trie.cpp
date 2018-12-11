@@ -130,7 +130,7 @@ namespace zmote::countdown {
     using VectorOfCharVectors = std::vector<std::vector<char>>;
 
     std::string Trie::get_replacement(const std::string &letter) {
-        if (!letter.empty() && letter[0] == '\0') return "EMPTY";
+        if (!letter.empty() && letter[0] == '\0') return "ROOT";
         auto it = _replacementMap.find(letter);
         if (it != _replacementMap.end()) {
             return it->second;
@@ -159,7 +159,7 @@ namespace zmote::countdown {
         return line;
     }
 
-    std::pair<std::string, std::string> Trie::construct_gephi_pair(const TrieNodeSharedPtr &p_node, int level) {
+    std::pair<std::string, std::string> Trie::construct_gephi_pair(const TrieNodeSharedPtr &p_node) {
         std::string node{calculate_gephi_node(p_node)};
         std::string edges{};
         for (const TrieNodeSharedPtr &p_child: p_node->get_children()) {
@@ -169,14 +169,14 @@ namespace zmote::countdown {
     }
 
     void Trie::calculate_trie_recursive(const TrieNodeSharedPtr &p_node,
-                                        std::set<std::pair<std::string, std::string>> &nodes, int level) {
+                                        std::set<std::pair<std::string, std::string>> &nodes) {
         if (!p_node->get_children().empty()) {
             for (const TrieNodeSharedPtr &p_child:p_node->get_children()) {
-                calculate_trie_recursive(p_child, nodes, level + 1);
+                calculate_trie_recursive(p_child, nodes);
             }
-            nodes.insert(construct_gephi_pair(p_node, level));
+            nodes.insert(construct_gephi_pair(p_node));
         } else {
-            nodes.insert(construct_gephi_pair(p_node, level));
+            nodes.insert(construct_gephi_pair(p_node));
         }
     }
 
@@ -184,7 +184,7 @@ namespace zmote::countdown {
         init_replacement_map();
         zmote::countdown::GLOBAL_ID = 0;
         std::set<std::pair<std::string, std::string>> nodes{};
-        calculate_trie_recursive(_root, nodes, 0);
+        calculate_trie_recursive(_root, nodes);
         return nodes;
     }
 

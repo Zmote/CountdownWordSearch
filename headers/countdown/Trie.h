@@ -29,9 +29,9 @@ namespace zmote::countdown {
 
         std::string calculate_gephi_edge(const TrieNodeSharedPtr &p_node, const TrieNodeSharedPtr &p_child);
 
-        std::pair<std::string,std::string> construct_gephi_pair(const TrieNodeSharedPtr &p_node, int level);
+        std::pair<std::string,std::string> construct_gephi_pair(const TrieNodeSharedPtr &p_node);
 
-        void calculate_trie_recursive(const TrieNodeSharedPtr &p_node, std::set<std::pair<std::string,std::string>> & nodes, int level);
+        void calculate_trie_recursive(const TrieNodeSharedPtr &p_node, std::set<std::pair<std::string,std::string>> & nodes);
 
         std::string get_replacement(const std::string &letter);
 
