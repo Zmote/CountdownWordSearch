@@ -32,7 +32,7 @@ namespace zmote::countdown {
         return _isEndNode;
     }
 
-    void TrieNode::set_parent(const TrieNodeSharedPtr &pParent) {
+    void TrieNode::set_parent(TrieNodeSharedPtr const &pParent) {
         _parent = pParent;
     }
 
@@ -54,13 +54,5 @@ namespace zmote::countdown {
 
     char TrieNode::val() const {
         return _value;
-    }
-
-    const TrieNodeVector &TrieNode::get_children() const {
-        return _children;
-    }
-
-    int TrieNode::get_id() const {
-        return _id;
     }
 }

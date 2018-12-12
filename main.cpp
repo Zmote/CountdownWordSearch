@@ -17,7 +17,7 @@ int main() {
         std::vector<std::string> found_words = dictionary.find_words(input);
         if (!found_words.empty()) {
             std::cout << "Words found bigger than 7 letters:\n";
-            for (const auto &word : found_words) {
+            for (auto const &word : found_words) {
                 if (word.length() >= 7) {
                     std::cout << word << ", " << word.length() << " letter word." << std::endl;
                 }

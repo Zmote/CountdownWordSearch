@@ -5,11 +5,10 @@
 #include <vector>
 
 namespace zmote::countdown {
+    class TrieNode;
 
-    static int GLOBAL_ID{0};
-
-    using TrieNodeSharedPtr = std::shared_ptr<class TrieNode>;
-    using TrieNodeWeakPtr = std::weak_ptr<class TrieNode>;
+    using TrieNodeSharedPtr = std::shared_ptr<TrieNode>;
+    using TrieNodeWeakPtr = std::weak_ptr<TrieNode>;
     using TrieNodeVector = std::vector<TrieNodeSharedPtr>;
 
     class TrieNode : public std::enable_shared_from_this<TrieNode> {
@@ -17,7 +16,6 @@ namespace zmote::countdown {
         TrieNodeVector _children;
         bool _isEndNode = false;
         char _value;
-        int _id = zmote::countdown::GLOBAL_ID++;
 
     private:
         auto find_element(char letter);
@@ -33,7 +31,7 @@ namespace zmote::countdown {
 
         bool is_word_end() const;
 
-        void set_parent(const TrieNodeSharedPtr &pParent);
+        void set_parent(TrieNodeSharedPtr const &pParent);
 
         TrieNodeSharedPtr get_parent() const;
 
@@ -42,10 +40,6 @@ namespace zmote::countdown {
         TrieNodeSharedPtr &get_next(char letter);
 
         char val() const;
-
-        int get_id() const;
-
-        const TrieNodeVector &get_children() const;
     };
 }
 #endif //COUNTDOWNWORDSEARCH_TRIENODE_H
