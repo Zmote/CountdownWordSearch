@@ -9,7 +9,6 @@
 int main() {
     std::cout << "Initializing dictionary... please be patient...\n";
     zmote::countdown::Trie dictionary{"./resources/words.txt"};
-//    dictionary.writeTrieToCSV("treeData");
     std::string input{};
     std::cout << "Check if a word exists in the dictionary:\n";
     std::cout << "Your word:\n";
