@@ -1,14 +1,12 @@
 #include <iostream>
-#include <fstream>
 #include "headers/countdown/Trie.h"
 
 
 //TODO: Implement input with console arguments, so that the tool can be used standalone
-//TODO: Compile word library so command can be used independent of txt-file
 
 int main() {
     std::cout << "Initializing dictionary... please be patient...\n";
-    zmote::countdown::Trie dictionary{"./resources/words.txt"};
+    zmote::countdown::Trie dictionary{zmote::countdown::DICTIONARY_TYPE::EN};
     std::string input{};
     std::cout << "Check if a word exists in the dictionary:\n";
     std::cout << "Your word:\n";

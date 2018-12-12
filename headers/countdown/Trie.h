@@ -6,6 +6,9 @@
 #include "TrieNode.h"
 
 namespace zmote::countdown {
+
+    enum class DICTIONARY_TYPE{EN};
+
     using StringVector = std::vector<std::string>;
 
     class Trie {
@@ -29,6 +32,7 @@ namespace zmote::countdown {
 
         Trie() = default;
 
+        explicit Trie(DICTIONARY_TYPE type);
         explicit Trie(std::string const &file_path);
 
         void build_from(std::string const &file_path);

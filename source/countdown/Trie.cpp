@@ -1,13 +1,26 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <sstream>
 #include "../../headers/countdown/Trie.h"
+#include "../../headers/countdown/Dictionary_EN.h"
 
 namespace zmote::countdown {
 
     Trie::Trie(std::string const &file_path) {
         build_from(file_path);
     }
+
+    Trie::Trie(DICTIONARY_TYPE type) {
+        if (type == DICTIONARY_TYPE::EN) {
+            std::string input{};
+            std::stringstream dictionaryStream{zmote::countdown::DICTIONARY_EN};
+            while (std::getline(dictionaryStream, input)) {
+                this->add_word(input);
+            }
+        }
+    }
+
 
     std::string Trie::extract_around_letter(char letter, std::string const &input) {
         std::string extracted{};

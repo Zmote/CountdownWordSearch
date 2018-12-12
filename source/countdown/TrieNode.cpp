@@ -2,7 +2,6 @@
 #include "../../headers/countdown/TrieNode.h"
 
 namespace zmote::countdown {
-
     TrieNode::TrieNode() : _value{'\0'} {}
 
     TrieNode::TrieNode(char value) : _value{value} {}
